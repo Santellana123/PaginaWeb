@@ -35,7 +35,7 @@ if ($metodo === 'GET') {
 }
 
 if ($metodo === 'POST') {
-    $datos_usuario = verificar_token(); // valida token y retorna payload o error y termina
+    $datos_usuario = verificar_token(); // valida token y retorna datos usuario
 
     $data = json_decode(file_get_contents('php://input'), true);
 

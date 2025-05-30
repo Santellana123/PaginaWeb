@@ -1,24 +1,13 @@
 <?php
-
-/**
- * Configuración y funciones básicas para JWT (JSON Web Tokens)
- */
-
-// Clave secreta utilizada para firmar los tokens
-define('JWT_SECRET_KEY', 'erick123');
-
-// Algoritmo usado para firmar los tokens
-define('JWT_ALGORITHM', 'HS256');
-
-// Tiempo de expiración del token (en segundos)
-define('JWT_EXPIRE_TIME', 3600); // 1 hora
-
-// Nombre del encabezado donde se espera el token
-define('JWT_HEADER_NAME', 'Authorization');
-
+// jwt.php
 
 use \Firebase\JWT\JWT;
 use \Firebase\JWT\Key;
+
+// Clave secreta y configuración
+define('JWT_SECRET_KEY', 'erick123');
+define('JWT_ALGORITHM', 'HS256');
+define('JWT_EXPIRE_TIME', 3600); // 1 hora
 
 /**
  * Genera un nuevo token JWT para un usuario
@@ -27,6 +16,8 @@ use \Firebase\JWT\Key;
  * @return string Token codificado
  */
 function generate_jwt($payload) {
+    // Añadir tiempo de expiración
+    $payload['exp'] = time() + JWT_EXPIRE_TIME;
     return JWT::encode($payload, JWT_SECRET_KEY, JWT_ALGORITHM);
 }
 

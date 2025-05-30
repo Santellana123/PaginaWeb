@@ -1,39 +1,43 @@
-<?php
-session_start();
-require_once 'config/db.php';
-
-// Consulta para obtener todos los productos con sus categorías
-$sql = "SELECT p.id_producto, p.nombre_Producto, p.descripcion, p.Precio, i.url AS imagen, c.nombre AS categoria
-        FROM Producto p
-        LEFT JOIN Imagen i ON p.id_producto = i.id_Producto
-        LEFT JOIN categoria c ON p.id_categoria = c.id_categoria
-        ORDER BY p.nombre_Producto ASC";
-$result = $conn->query($sql);
-
-$products = [];
-while ($row = $result->fetch_assoc()) {
-    $products[] = $row;
-}
-?>
-
+<?php session_start(); ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Ver Productos</title>
-    <link rel="stylesheet" href="estilos/carrito.css">
-    <link rel="stylesheet" href="estilos/ver_productos.css">
-    <link rel="stylesheet" href="estilos/footer.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css ">
-
+  <meta charset="UTF-8">
+  <title>Ver Productos</title>
+  <link rel="stylesheet" href="estilos/carrito.css">
+  <link rel="stylesheet" href="estilos/ver_productos.css">
+  <link rel="stylesheet" href="estilos/footer.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    /* Estilos para paginación */
+    .paginacion {
+      margin-top: 1rem;
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .paginacion button {
+      padding: 0.5rem 0.8rem;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .paginacion button:disabled {
+      background-color: #aaa;
+      cursor: default;
+    }
+    #categoryMenu {
+      margin-bottom: 1rem;
+    }
+  </style>
 </head>
 <body>
 
-<!-- Header igual al de carrito.php -->
 <header class="header">
   <div class="logo"><i class="fas fa-shopping-bag"></i> Mi E-Commerce</div>
   <div class="acciones">
-    <!-- Botón filtro también puede ir aquí -->
     <button id="filterButton"><i class="fas fa-filter"></i> Filtrar</button>
     <button onclick="location.href='inicio.php'"><i class="fas fa-home"></i> Inicio</button>
     <button onclick="location.href='carrito.php'"><i class="fas fa-shopping-cart"></i> Carrito</button>
@@ -47,41 +51,31 @@ while ($row = $result->fetch_assoc()) {
 </header>
 
 <main class="main-content">
-    <h2>Todos los Productos</h2>
+  <h2>Todos los Productos</h2>
 
-    <!-- Menú desplegable para categorías -->
-    <div id="categoryMenu" style="display:none; margin-bottom: 1rem;">
-        <!-- Aquí puedes insertar dinámicamente las categorías -->
-        <!-- <div class="category-item" data-id="1">Tecnología</div> -->
-    </div>
+  <div id="categoryMenu" style="display:none;">
+    <label for="categoriaSelect">Categoría:</label>
+    <select id="categoriaSelect">
+      <option value="">Todas</option>
+      <!-- Las categorías se cargarán dinámicamente -->
+    </select>
+  </div>
 
-    <?php if (empty($products)): ?>
-        <p>No hay productos disponibles.</p>
-    <?php else: ?>
-        <div class="grid-productos">
-            <?php foreach ($products as $product): ?>
-                <div class="card-producto">
-                    <img src="<?= htmlspecialchars($product['imagen']) ?>" alt="<?= htmlspecialchars($product['nombre_Producto']) ?>">
-                    <h3><?= htmlspecialchars($product['nombre_Producto']) ?></h3>
-                    <p class="precio">$<?= number_format($product['Precio'], 2) ?></p>
-                    <p class="categoria"><?= htmlspecialchars($product['categoria']) ?></p>
-                    <a href="detalle_producto.php?id=<?= $product['id_producto'] ?>" class="btn-detalle">Ver Detalle</a>
-                </div>
-            <?php endforeach; ?>
-        </div>
-    <?php endif; ?>
+  <div id="productos" class="grid-productos">
+    <p>Cargando productos...</p>
+  </div>
+
+  <div class="paginacion" id="paginacion">
+    <!-- Botones de paginación -->
+  </div>
 </main>
 
 <footer class="main-footer">
   <div class="footer-container">
-    
-    <!-- Información de la tienda -->
     <div class="footer-box">
       <h3>🛍️ Mi E-Commerce</h3>
-      <p>Tu tienda online con los mejores productos del mercado. Calidad garantizada al mejor precio.</p>
+      <p>Tu tienda online con los mejores productos del mercado.</p>
     </div>
-
-    <!-- Enlaces rápidos -->
     <div class="footer-box">
       <h3>Enlaces Rápidos</h3>
       <ul>
@@ -92,8 +86,6 @@ while ($row = $result->fetch_assoc()) {
         <li><a href="registro.php">Registrarse</a></li>
       </ul>
     </div>
-
-    <!-- Contacto -->
     <div class="footer-box">
       <h3>Contacto</h3>
       <ul>
@@ -102,8 +94,6 @@ while ($row = $result->fetch_assoc()) {
         <li>📍 Bogotá, Colombia</li>
       </ul>
     </div>
-
-    <!-- Redes sociales -->
     <div class="footer-box">
       <h3>Síguenos</h3>
       <div class="social-links">
@@ -113,10 +103,7 @@ while ($row = $result->fetch_assoc()) {
         <a href="#"><i class="fab fa-youtube"></i> YouTube</a>
       </div>
     </div>
-
   </div>
-
-  <!-- Derechos de autor -->
   <div class="footer-bottom">
     <p>&copy; <?= date('Y') ?> Mi E-Commerce - Todos los derechos reservados.</p>
   </div>
@@ -128,12 +115,149 @@ document.getElementById('filterButton').addEventListener('click', function () {
   menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
 });
 
-document.querySelectorAll('.category-item').forEach(item => {
-  item.addEventListener('click', function () {
-    const categoryId = this.getAttribute('data-id');
-    window.location.href = 'inicio.php?categoria_id=' + categoryId;
-  });
+const productosContenedor = document.getElementById('productos');
+const paginacionContenedor = document.getElementById('paginacion');
+const categoriaSelect = document.getElementById('categoriaSelect');
+
+let paginaActual = 1;
+let totalPaginas = 1;
+let categoriaActual = "";
+
+// Función para guardar estado en sessionStorage
+function guardarEstado() {
+  sessionStorage.setItem('paginaActual', paginaActual);
+  sessionStorage.setItem('categoriaActual', categoriaActual);
+}
+
+// Función para cargar estado de sessionStorage
+function cargarEstado() {
+  const pagina = sessionStorage.getItem('paginaActual');
+  const categoria = sessionStorage.getItem('categoriaActual');
+
+  if (pagina) paginaActual = parseInt(pagina);
+  if (categoria) {
+    categoriaActual = categoria;
+    categoriaSelect.value = categoriaActual;
+  }
+}
+
+// Cargar categorías para filtro
+async function cargarCategorias() {
+  try {
+    const res = await fetch('api/categorias.php'); // Debes crear esta API o usar tu propia ruta
+    const data = await res.json();
+
+    if (!data.success || !data.categorias) {
+      console.warn('No se encontraron categorías o hubo un error.');
+      return;
+    }
+
+    // Vaciar select y agregar opciones
+    categoriaSelect.innerHTML = '<option value="">Todas</option>';
+    data.categorias.forEach(cat => {
+      categoriaSelect.innerHTML += `<option value="${cat.id_Categoria}">${cat.nombre_Categoria}</option>`;
+    });
+  } catch (error) {
+    console.error('Error al cargar categorías:', error);
+  }
+}
+
+// Función para cargar productos desde la API con paginación y filtro categoría
+async function cargarProductos() {
+  productosContenedor.innerHTML = '<p>Cargando productos...</p>';
+  paginacionContenedor.innerHTML = '';
+
+  try {
+    let url = `api/producto.php?pagina=${paginaActual}&limite=6`;
+    if (categoriaActual) {
+      url += `&categoria=${categoriaActual}`;
+    }
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (!data.success || !data.productos || data.productos.length === 0) {
+      productosContenedor.innerHTML = '<p>No hay productos disponibles.</p>';
+      return;
+    }
+
+    totalPaginas = data.total_paginas;
+    productosContenedor.innerHTML = '';
+
+    data.productos.forEach(producto => {
+      productosContenedor.innerHTML += `
+        <div class="card-producto">
+          <img src="${producto.url || 'default.jpg'}" alt="${producto.nombre_Producto}">
+          <h3>${producto.nombre_Producto}</h3>
+          <p class="precio">$${parseFloat(producto.Precio).toFixed(2)}</p>
+          <p class="categoria">${producto.nombre_Categoria || 'Sin categoría'}</p>
+          <a href="producto.php?id=${producto.id_Producto}" class="btn-detalle">Ver Detalle</a>
+        </div>
+      `;
+    });
+
+    // Crear botones de paginación
+    paginacionContenedor.innerHTML = '';
+
+    // Botón anterior
+    const btnAnterior = document.createElement('button');
+    btnAnterior.textContent = 'Anterior';
+    btnAnterior.disabled = paginaActual === 1;
+    btnAnterior.onclick = () => {
+      if (paginaActual > 1) {
+        paginaActual--;
+        guardarEstado();
+        cargarProductos();
+      }
+    };
+    paginacionContenedor.appendChild(btnAnterior);
+
+    // Botones numéricos
+    for (let i = 1; i <= totalPaginas; i++) {
+      const btn = document.createElement('button');
+      btn.textContent = i;
+      btn.disabled = i === paginaActual;
+      btn.onclick = () => {
+        paginaActual = i;
+        guardarEstado();
+        cargarProductos();
+      };
+      paginacionContenedor.appendChild(btn);
+    }
+
+    // Botón siguiente
+    const btnSiguiente = document.createElement('button');
+    btnSiguiente.textContent = 'Siguiente';
+    btnSiguiente.disabled = paginaActual === totalPaginas;
+    btnSiguiente.onclick = () => {
+      if (paginaActual < totalPaginas) {
+        paginaActual++;
+        guardarEstado();
+        cargarProductos();
+      }
+    };
+    paginacionContenedor.appendChild(btnSiguiente);
+
+  } catch (error) {
+    console.error('Error al cargar productos:', error);
+    productosContenedor.innerHTML = '<p>Error al cargar los productos.</p>';
+  }
+}
+
+// Evento cuando cambia la categoría
+categoriaSelect.addEventListener('change', () => {
+  categoriaActual = categoriaSelect.value;
+  paginaActual = 1;
+  guardarEstado();
+  cargarProductos();
 });
+
+// Al cargar la página, cargar estado, categorías y productos
+window.onload = async () => {
+  cargarEstado();
+  await cargarCategorias();
+  cargarProductos();
+};
 </script>
 
 </body>

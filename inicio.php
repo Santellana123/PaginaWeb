@@ -127,13 +127,8 @@ document.querySelectorAll('.category-item').forEach(item => {
 });
 
 function fetchProductosPorCategoria(categoria_id) {
-  // Validar que haya token antes de hacer la solicitud
-  if (!token) {
-    console.warn("No hay token. Redirigiendo a login...");
-    alert("Debes iniciar sesión para ver los productos.");
-    window.location.href = "login.php";
-    return;
-  }
+  const container = document.getElementById('productos-container');
+  container.innerHTML = '<p>Cargando productos...</p>';
 
   let url = 'api/producto.php';
   if (categoria_id) {
@@ -149,20 +144,19 @@ function fetchProductosPorCategoria(categoria_id) {
   })
   .then(response => {
     if (!response.ok) {
-      throw new Error('Error al obtener los datos de la API');
+      throw new Error('Error en la respuesta de la API');
     }
     return response.json();
   })
-  .then(productos => {
-    const container = document.getElementById('productos-container');
+  .then(data => {
     container.innerHTML = '';
 
-    if (!Array.isArray(productos) || productos.length === 0) {
+    if (!data.success || !Array.isArray(data.productos) || data.productos.length === 0) {
       container.innerHTML = '<p>No hay productos disponibles.</p>';
       return;
     }
 
-    productos.forEach(prod => {
+    data.productos.forEach(prod => {
       const div = document.createElement('div');
       div.className = 'producto';
       div.innerHTML = `
@@ -174,12 +168,12 @@ function fetchProductosPorCategoria(categoria_id) {
       container.appendChild(div);
     });
   })
-  .catch(err => {
-    console.error('Error:', err.message);
-    document.getElementById('productos-container').innerHTML = `
-      <p>Error al cargar productos. Inténtalo más tarde.</p>`;
+  .catch(error => {
+    console.error('Error al cargar productos:', error);
+    container.innerHTML = '<p>Error al cargar productos. Intenta más tarde.</p>';
   });
 }
+
 
 // Banner rotativo
 const banners = [

@@ -68,11 +68,12 @@ const productoId = <?= $id_producto ?>;
 const jwtToken = "<?= $jwt_token ?>";
 
 function cargarProducto() {
-  fetch(`api/productos.php?id=${productoId}`)
+  fetch(`api/producto.php?id=${productoId}`)
     .then(res => res.json())
     .then(data => {
       if (!data.success) return alert('Producto no encontrado');
 
+      // Suponiendo que la nueva API devuelve el producto directamente en data.producto
       const p = data.producto;
       const html = `
         <img src="${p.url}" alt="Producto">
@@ -92,8 +93,13 @@ function cargarProducto() {
         </div>`;
 
       document.getElementById('detalle-producto').innerHTML = html;
+    })
+    .catch(err => {
+      console.error('Error al cargar producto:', err);
+      alert('Error al cargar el producto.');
     });
 }
+
 
 function cargarComentarios() {
   fetch(`api/comentarios.php?id_producto=${productoId}`)
