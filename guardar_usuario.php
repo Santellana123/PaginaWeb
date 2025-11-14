@@ -21,7 +21,7 @@ if ($result->num_rows > 0) {
 }
 
 // Inserta usuario
-$stmt = $conn->prepare("INSERT INTO Usuario (nombre, apellido, correo, contraseña, fecha_Registro, id_tipo_de_usuario) VALUES (?, ?, ?, ?, ?, ?)");
+$stmt = $conn->prepare("INSERT INTO Usuario (nombre, apellido, correo, contrasena, fecha_Registro, id_tipo_de_usuario) VALUES (?, ?, ?, ?, ?, ?)");
 $stmt->bind_param("sssssi", $nombre, $apellido, $correo, $contraseña, $fecha, $id_tipo);
 
 if ($stmt->execute()) {

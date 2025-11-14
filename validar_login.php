@@ -12,12 +12,15 @@ define('JWT_ALGORITHM', 'HS256');
 define('JWT_EXPIRE_TIME', 3600); // 1 hora
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // La contraseña que el usuario escribe en el formulario (puede tener 'ñ')
     $correo = $_POST['correo'];
-    $contraseña = $_POST['contraseña'];
+    $contraseña_form = $_POST['contraseña']; // Renombrada para claridad
     
     error_log("Intento de inicio de sesión para: " . $correo);
     
-    $sql = "SELECT * FROM usuario WHERE correo = ?";
+    // --- CORRECCIÓN 1 ---
+    // La tabla se llama 'Usuario' (Mayúscula) como en tu SQL
+    $sql = "SELECT * FROM Usuario WHERE correo = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $correo);
     $stmt->execute();
@@ -25,9 +28,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $usuario = $result->fetch_assoc();
 
     if ($usuario) {
-        error_log("Usuario encontrado con ID: " . $usuario['id_Usuario']);
+        error_log(message: "Usuario encontrado con ID: " . $usuario['id_Usuario']);
         
-        $verificacion = password_verify($contraseña, $usuario['contraseña']);
+        // --- CORRECCIÓN 2 ---
+        // La columna en la BD se llama 'contrasena' (con 'a')
+        // Comparamos la contraseña del formulario con la de la BD
+        $verificacion = password_verify($contraseña_form, $usuario['contrasena']);
+        
         error_log("Resultado de verificación de contraseña: " . ($verificacion ? "EXITOSO" : "FALLIDO"));
 
         if ($verificacion) {
@@ -62,7 +69,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header("Location: inicio.php");
             exit;
         } else {
-            error_log("Primeros 20 caracteres del hash almacenado: " . substr($usuario['contraseña'], 0, 20));
+            // --- CORRECCIÓN 3 (Opcional pero recomendada) ---
+            // Usar 'contrasena' (con 'a') para el log
+            error_log("Hash almacenado (primeros 20): " . substr($usuario['contrasena'], 0, 20));
             header("Location: login.php?error=1");
             exit;
         }
